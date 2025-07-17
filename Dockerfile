@@ -1,27 +1,14 @@
-# Stage 1: Build
-FROM maven:3.8.5-openjdk-17 AS builder
 
-WORKDIR /app
+FROM jenkins/jenkins:lts
 
-# Copy only the POM to pre-fetch deps excluding missing ones
-COPY pom.xml ./
-RUN mvn dependency:go-offline -B || echo "Ignoring offline error"
+USER root
 
-# Copy source and build package
-COPY src ./src
-RUN mvn clean package -DskipTests
+RUN apt-get update \
+    && apt-get install -y maven \
+    && rm -rf /var/lib/apt/lists/*
 
-# Stage 2: Extract artifacts
-FROM busybox AS extractor
-WORKDIR /out
-COPY --from=builder /app/target/*.hpi . || true
-COPY --from=builder /app/target/*.jar . || true
+ENV MAVEN_HOME=/usr/share/maven \
+    JAVA_HOME=/usr/local/openjdk-17 \
+    PATH=$MAVEN_HOME/bin:$JAVA_HOME/bin:$PATH
 
-# Stage 3: Runtime (optional, adapt as needed)
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-# Copy built plugin(s)
-COPY --from=extractor /out/ .
-
-CMD ["/bin/bash"]
-
+USER jenkins
