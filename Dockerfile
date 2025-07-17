@@ -3,9 +3,6 @@ FROM maven:3.8.5-openjdk-17 AS builder
 
 WORKDIR /app
 
-# Copy settings.xml if needed (e.g. for Jenkins repo access)
-COPY settings.xml /root/.m2/settings.xml
-
 # Copy only the POM to pre-fetch deps excluding missing ones
 COPY pom.xml ./
 RUN mvn dependency:go-offline -B || echo "Ignoring offline error"
