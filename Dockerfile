@@ -26,5 +26,5 @@ WORKDIR /app
 # Copy built plugin(s)
 COPY --from=extractor /out/ .
 
-# Default command (optional)
-/bin/sh
+CMD ["/bin/bash"]
+
